@@ -1,6 +1,6 @@
 # MegIS Replication: In-Storage Processing for Metagenomic Analysis
 
-A student replication of **MegIS** (Mansouri Ghiasi et al., ISCA 2024), carried out as a B.Sc. Electrical Engineering Final Year Design Project (FYDP-35) at the University of Engineering and Technology (UET) Lahore.
+UG student replication of **MegIS** (Mansouri Ghiasi et al., ISCA 2024), carried out as a B.Sc. Electrical Engineering Final Year Design Project (FYDP-35) at the University of Engineering and Technology (UET) Lahore.
 
 MegIS reduces the storage-I/O bottleneck in metagenomic analysis by splitting the work between the host and the SSD. The host extracts and sorts k-mers. The SSD intersects them with a reference database stored in NAND flash and retrieves taxonomic IDs, so only results cross the PCIe link.
 
