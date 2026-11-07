@@ -114,11 +114,11 @@ void FTL::Execute_simulator_event(MQSimEngine::Sim_Event* event)
     // -----------------------------------------------------------
     // 2. SAFETY FIRST: Do NOT block other events yet
     // -----------------------------------------------------------
-    // We removed the "if (megis_mode) return;" line.
+    // removed the "if (megis_mode) return;" line.
     // This ensures that Flash Read/Write completions can still happen.
     
-    // If your original FTL.cpp had logic here, paste it back.
-    // If it was empty (as in your uploaded file), leave it empty.
+    //  original FTL.cpp had logic here..
+    //.
 }
 
     void FTL::Validate_simulation_config()
