@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegIS FSM & System Block Diagram</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --arrow-color: #555;
+            
+            /* State Colors */
+            --state-init-bg: #e8f5e9;
+            --state-init-border: #4caf50;
+            
+            --state-host-bg: #eceff1;
+            --state-host-border: #607d8b;
+            
+            --state-data-bg: #e3f2fd;
+            --state-data-border: #2196f3;
+            
+            --state-ssd-bg: #ffebee;
+            --state-ssd-border: #e53935;
+            
+            --state-done-bg: #fff3e0;
+            --state-done-border: #ff9800;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #263238;
+            border-bottom: 2px solid #cfd8dc;
+            padding-bottom: 10px;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #455a64;
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+        }
+
+        /* Container for side-by-side layout on large screens */
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 60px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .section-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- FSM STYLES --- */
+        .fsm-node {
+            width: 220px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-width: 2px;
+            border-style: solid;
+            font-weight: bold;
+            position: relative;
+            margin-bottom: 40px; /* Space for arrow */
+            transition: transform 0.2s;
+        }
+
+        .fsm-node:hover {
+            transform: scale(1.03);
+        }
+
+        .fsm-node .sub-text {
+            display: block;
+            font-weight: normal;
+            font-size: 0.85em;
+            margin-top: 5px;
+            color: #555;
+        }
+
+        /* Specific State Colors */
+        .st-init { background: var(--state-init-bg); border-color: var(--state-init-border); color: #2e7d32; }
+        .st-host { background: var(--state-host-bg); border-color: var(--state-host-border); color: #455a64; }
+        .st-data { background: var(--state-data-bg); border-color: var(--state-data-border); color: #1565c0; }
+        .st-ssd  { background: var(--state-ssd-bg); border-color: var(--state-ssd-border); color: #c62828; }
+        .st-done { background: var(--state-done-bg); border-color: var(--state-done-border); color: #ef6c00; }
+
+        /* Arrows */
+        .arrow-down {
+            position: absolute;
+            bottom: -42px; /* Position in the gap */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 40px;
+            background-color: var(--arrow-color);
+        }
+
+        .arrow-down::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -5px;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid var(--arrow-color);
+        }
+
+        .arrow-label {
+            position: absolute;
+            top: 50%;
+            left: 10px; /* Position to right of arrow line */
+            transform: translateY(-50%);
+            background: white;
+            padding: 2px 5px;
+            font-size: 0.75em;
+            color: #666;
+            white-space: nowrap;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        /* Loop Back Line */
+        .loop-line {
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            width: 40px;
+            height: 100%; /* Spans up */
+            border-right: 2px dashed #999;
+            border-top: 2px dashed #999;
+            border-bottom: 2px dashed #999;
+            z-index: 0;
+            display: none; /* Complex to render pure CSS dynamically, kept simple flow */
+        }
+
+        /* --- BLOCK DIAGRAM STYLES --- */
+        .block-node {
+            width: 260px;
+            padding: 20px;
+            border: 1px solid #bbb;
+            background: #fff;
+            margin-bottom: 40px;
+            position: relative;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        .block-header {
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .block-desc {
+            font-size: 0.9em;
+            color: #444;
+        }
+
+        .blk-host { border-left: 5px solid #607d8b; }
+        .blk-ssd-init { border-left: 5px solid #4caf50; }
+        .blk-pcie { border-left: 5px solid #2196f3; }
+        .blk-ssd-acc { border-left: 5px solid #e53935; }
+
+    </style>
+</head>
+<body>
+
+    <h1>MegIS Architecture & Flow</h1>
+
+    <div class="main-container">
+        
+        <!-- 1. FSM DIAGRAM -->
+        <div class="section-box">
+            <h2>1. Finite State Machine (FSM)</h2>
+            
+            <!-- STATE 1 -->
+            <div class="fsm-node st-init">
+                INITIALIZING
+                <span class="sub-text">Send MEGIS_INIT</span>
+                <div class="arrow-down"><div class="arrow-label">INIT Done</div></div>
+            </div>
+
+            <!-- STATE 2 -->
+            <div class="fsm-node st-host">
+                HOST_PROCESSING
+                <span class="sub-text">CPU Sort / Extract<br>(Simulated Delay)</span>
+                <div class="arrow-down"><div class="arrow-label">Timer Expire</div></div>
+            </div>
+
+            <!-- STATE 3 -->
+            <div class="fsm-node st-data">
+                DATA_TRANSFER
+                <span class="sub-text">Send MEGIS_WRITE<br>(Chunk Loop)</span>
+                <div class="arrow-down"><div class="arrow-label">Bucket Written</div></div>
+            </div>
+
+            <!-- STATE 4 -->
+            <div class="fsm-node st-ssd">
+                SSD_PROCESSING
+                <span class="sub-text">Send MEGIS_STEP (2)<br>(Hardware Accel)</span>
+                <div class="arrow-down"><div class="arrow-label">SSD Finished</div></div>
+            </div>
+
+            <!-- STATE 5 -->
+            <div class="fsm-node st-done">
+                COMPLETED / LOOP
+                <span class="sub-text">Check if more buckets exist</span>
+                <!-- Visual cue for loop back -->
+                <div style="font-size:0.8em; color:#999; margin-top:5px;">(↺ Loop to Host_Processing)</div>
+            </div>
+        </div>
+
+
+        <!-- 2. BLOCK DIAGRAM -->
+        <div class="section-box" style="background-color: #fafafa;">
+            <h2>2. System Block Diagram</h2>
+
+            <!-- BLOCK 1 -->
+            <div class="block-node blk-host">
+                <span class="block-header">Host (CPU + SW)</span>
+                <span class="block-desc">MEGIS IO FLOW CODE<br>Start Session</span>
+                <div class="arrow-down"><div class="arrow-label">MEGIS_INIT</div></div>
+            </div>
+
+            <!-- BLOCK 2 -->
+            <div class="block-node blk-ssd-init">
+                <span class="block-header">SSD (Firmware)</span>
+                <span class="block-desc">Alloc Host Buffer<br>Store DMA Address</span>
+                <div class="arrow-down"><div class="arrow-label">INIT_DONE</div></div>
+            </div>
+
+            <!-- BLOCK 3 -->
+            <div class="block-node blk-host">
+                <span class="block-header">Host CPU Logic</span>
+                <span class="block-desc">Sort/Extract K-Mers<br><i>(Wait Event)</i></span>
+                <div class="arrow-down"><div class="arrow-label">Sorted Bucket Ready</div></div>
+            </div>
+
+            <!-- BLOCK 4 -->
+            <div class="block-node blk-pcie">
+                <span class="block-header">PCIe Data Transfer</span>
+                <span class="block-desc">MEGIS_WRITE (Chunks)<br>Fill SSD DRAM</span>
+                <div class="arrow-down"><div class="arrow-label">Buffer Full</div></div>
+            </div>
+
+            <!-- BLOCK 5 -->
+            <div class="block-node blk-ssd-acc">
+                <span class="block-header">SSD Accelerator Core</span>
+                <span class="block-desc">MEGIS_STEP (Trigger)<br>Intersect & Merge</span>
+                <div class="arrow-down"><div class="arrow-label">Result DMA</div></div>
+            </div>
+
+            <!-- BLOCK 6 -->
+            <div class="block-node blk-host">
+                <span class="block-header">Host Loop</span>
+                <span class="block-desc">Process next bucket<br>or Finish</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
